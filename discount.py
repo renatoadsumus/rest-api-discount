@@ -1,12 +1,14 @@
-from flask import Flask, render_template, redirect, \
-      url_for, request, session, flash, g
-
-app = Flask(__name__)
-
-@app.route('/', methods=['GET', 'POST'])
-def total_amount(self):
-    return "<h1>Distant Reading Archive</h1><p>This site is a prototype API for distant reading of science fiction novels.</p>"
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+class Discount(object):
+    #def __init__(self):
+
+    def total_amount(self, purchase_total):
+        discount = 0
+        if purchase_total > 10:
+            discount = 10
+
+        if purchase_total > 20:
+            discount = 20
+
+        return discount
