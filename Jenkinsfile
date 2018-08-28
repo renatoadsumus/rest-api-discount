@@ -3,9 +3,16 @@ pipeline {
       
 	parameters {
     choice(
-        name: 'TipoDeploy',
+        name: 'KindOfDeploy',
         choices: "PrimeiroDeploy\nDeployRecorrente",
-        description: 'Validacao e Deploy na AWS' 
+        description: 'Deploy S3 e Elastic Beanstalk AWS' 
+		)
+  	}
+
+	  choice(
+        name: 'Environment',
+        choices: "staging\nproduction",
+        description: 'Deploy S3 e Elastic Beanstalk AWS ' 
 		)
   	}
 
@@ -17,23 +24,23 @@ pipeline {
     stages 
 	{ 	
 
-		stage('Build e Analise Codigo') { 
+		stage('Build and Unit Test') { 
 			steps {	
 				slackSend (color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 
                	hipchatSend (color: 'YELLOW', notify: true,
             	message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
           )			
-				echo "Building aplicacao com Gradle"							
-                sh "docker run --rm -v /opt/jenkins/workspace/deploy_app/:/codigo_da_aplicacao renatoadsumus/gradle:4.9"
+				echo "Unit Test"
+                sh "python -m unittest discover test/unit/"
                			  							
 			}			
 		}
 
-		stage('Analise Log') { 
+		stage('Integration Test') { 
 			steps {
 
-				echo "Analisando Logs em busca de erro 500 e 503"	
+				echo "python -m unittest discover test/integration/"	
 			}
 
 		}
@@ -44,15 +51,15 @@ pipeline {
 				echo "####################################"
 				echo "Gerando a Imagem Docker da Aplicacao"	
 				echo "####################################"
-                sh "docker build -t renatoadsumus/docker-spring-sample ."				
+                sh "docker build -t renatoadsumus/app-purchase ."				
 				echo "####################################"
 				echo "SHA commit GITHUB:" + env.VERSAO_GIT
 				echo "####################################"
-				sh "docker tag renatoadsumus/docker-spring-sample renatoadsumus/docker-spring-sample:$VERSAO_GIT"				
+				sh "docker tag renatoadsumus/app-purchase renatoadsumus/app-purchase:$VERSAO_GIT"				
 				sh "docker login --username=renatoadsumus --password=${DOCKER_HUB_PASS}"
                 echo "### EXECUTANDO PUSH DA IMAGEM GERADA ###"
-                sh "docker push renatoadsumus/docker-spring-sample"   
-				sh "docker push renatoadsumus/docker-spring-sample:$VERSAO_GIT" 
+                sh "docker push renatoadsumus/app-purchase"   
+				sh "docker push renatoadsumus/app-purchase:$VERSAO_GIT" 
 						
 			}			
 		}	        
@@ -68,7 +75,7 @@ pipeline {
 				echo "####################################"
 				echo "Gerando a Imagem Docker da Aplicacao"	
 				echo "####################################"               	
-				 sh "docker run --rm -v /opt/jenkins/workspace/deploy_app/eb/:/opt/artefato_deploy -e AWS_ACCESS_KEY_ID='${AWS_ACCESS_KEY_ID}' -e AWS_SECRET_ACCESS_KEY='${AWS_SECRET_ACCESS_KEY}' -e VERSAO='${env.BUILD_ID}' -e OPCAO='${params.TipoDeploy}' renatoadsumus/aws_cli:2.0"
+				 sh "docker run --rm -v /opt/jenkins/workspace/deploy_app/eb/:/opt/artefato_deploy -e AWS_ACCESS_KEY_ID='${AWS_ACCESS_KEY_ID}' -e AWS_SECRET_ACCESS_KEY='${AWS_SECRET_ACCESS_KEY}' -e VERSAO='${env.BUILD_ID}' -e OPCAO='${params.TipoDeploy}' -e APP_NAME='jexia-purchase-${params.Environment}' renatoadsumus/aws_cli:3.0"
 						
 			}						
 		}  	
