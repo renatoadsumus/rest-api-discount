@@ -1,0 +1,68 @@
+pipeline {
+    agent any     
+
+    stages 
+	{ 			
+
+		
+		
+		stage('Build Imagem Docker DISCOUNT API ') { 
+			when {
+              expression {
+                currentBuild.result == null || currentBuild.result == 'SUCCESS' 
+              }
+            }
+			steps {			
+				echo "####################################"
+				echo "Recovering Last Version Stable"	
+				echo "####################################"
+                sh "docker build tag renatoadsumus/api-discount:fallback renatoadsumus/api-discount:latest"				
+				echo "####################################"              
+						
+			}			
+		}	        
+
+       stage('Deploy') { 
+			
+			when {
+              expression {
+                currentBuild.result == null || currentBuild.result == 'SUCCESS' 
+              }
+            }
+			steps {		
+				sh "docker stop $(docker ps -q)"	
+				echo "####################################"
+				echo "Gerando a Imagem Docker da Aplicacao"	
+				echo "####################################"               	
+				 sh "docker run --rm -p 80:5000 renatoadsumus/api-discount:latest"
+						
+			}						
+		}  	
+	}
+
+	post {
+		
+		always {
+			cleanWs()
+		}
+
+		success {
+      		slackSend (color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+
+      		hipchatSend (color: 'GREEN', notify: true,
+          	message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+        )
+
+  
+    	}
+	
+		failure {
+      		slackSend (color: '#FF0000', message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+
+      		hipchatSend (color: 'RED', notify: true,
+          	message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+        	)     
+    	}
+	} 	
+
+}

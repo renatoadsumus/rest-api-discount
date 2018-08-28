@@ -1,0 +1,98 @@
+pipeline {
+    agent any     
+
+    stages 
+	{ 	
+
+		stage('Build and Unit Test') { 
+			steps {	
+				slackSend (color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+
+               	hipchatSend (color: 'YELLOW', notify: true,
+            	message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+          )			
+				echo "####################################"
+				echo "Running Unit Test"
+				echo "####################################"
+                sh "python -m unittest discover test/unit/"
+				echo "####################################"  
+				
+               			  							
+			}			
+		}
+
+		stage('Integration Test') { 
+			steps {
+
+				echo "####################################"
+				echo "Running Integration Test"
+				echo "####################################"
+				sh "python -m unittest discover test/integration/"
+				echo "####################################"  	
+			}
+
+		}
+		
+		
+		stage('Build Imagem Docker DISCOUNT API ') { 
+			when {
+              expression {
+                currentBuild.result == null || currentBuild.result == 'SUCCESS' 
+              }
+            }
+			steps {			
+				echo "####################################"
+				echo "Building Docker Image"	
+				echo "####################################"
+				sh "docker build tag renatoadsumus/api-discount:latest renatoadsumus/api-discount:fallback"	
+                sh "docker build -t renatoadsumus/api-discount:latest ."							
+				echo "####################################"              
+						
+			}			
+		}	        
+
+       stage('Deploy') { 
+			
+			when {
+              expression {
+                currentBuild.result == null || currentBuild.result == 'SUCCESS' 
+              }
+            }
+			steps {			
+				sh "docker stop $(docker ps -q)"
+				echo "####################################"
+				echo "Running Container API"	
+				echo "####################################"               	
+				 sh "docker run --rm -p 80:5000 renatoadsumus/api-discount:latest"
+				echo "####################################"
+						
+			}						
+		}  	
+	}
+
+	post {
+		
+		always {
+			cleanWs()
+		}
+
+		success {
+      		slackSend (color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+
+      		hipchatSend (color: 'GREEN', notify: true,
+          	message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+        )
+
+  
+    	}
+	
+		failure {
+      		slackSend (color: '#FF0000', message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+
+      		hipchatSend (color: 'RED', notify: true,
+          	message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+        	)     
+    	}
+	} 	
+
+}

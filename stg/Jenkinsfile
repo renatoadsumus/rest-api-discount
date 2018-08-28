@@ -1,25 +1,5 @@
 pipeline {
-    agent any 
-      
-	parameters {
-    choice(
-        name: 'KindOfDeploy',
-        choices: "PrimeiroDeploy\nDeployRecorrente",
-        description: 'Deploy S3 e Elastic Beanstalk AWS' 
-		)
-  	}
-
-	  choice(
-        name: 'Environment',
-        choices: "staging\nproduction",
-        description: 'Deploy S3 e Elastic Beanstalk AWS ' 
-		)
-  	}
-
-	  environment {
-		  VERSAO_GIT = '$(git rev-parse HEAD | cut -c 1-10)'
-
-	  }
+    agent any     
 
     stages 
 	{ 	
@@ -31,8 +11,11 @@ pipeline {
                	hipchatSend (color: 'YELLOW', notify: true,
             	message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
           )			
-				echo "Unit Test"
+				echo "####################################"
+				echo "Running Unit Test"
+				echo "####################################"
                 sh "python -m unittest discover test/unit/"
+				echo "####################################"
                			  							
 			}			
 		}
@@ -40,32 +23,17 @@ pipeline {
 		stage('Integration Test') { 
 			steps {
 
-				echo "python -m unittest discover test/integration/"	
+				echo "####################################"
+				echo "Running Integration Test"
+				echo "####################################"
+				sh "python -m unittest discover test/integration/"
+				echo "####################################"  	
 			}
 
 		}
 		
 		
-		stage('Build Imagem Docker da Aplicacao') { 
-			steps {			
-				echo "####################################"
-				echo "Gerando a Imagem Docker da Aplicacao"	
-				echo "####################################"
-                sh "docker build -t renatoadsumus/app-purchase ."				
-				echo "####################################"
-				echo "SHA commit GITHUB:" + env.VERSAO_GIT
-				echo "####################################"
-				sh "docker tag renatoadsumus/app-purchase renatoadsumus/app-purchase:$VERSAO_GIT"				
-				sh "docker login --username=renatoadsumus --password=${DOCKER_HUB_PASS}"
-                echo "### EXECUTANDO PUSH DA IMAGEM GERADA ###"
-                sh "docker push renatoadsumus/app-purchase"   
-				sh "docker push renatoadsumus/app-purchase:$VERSAO_GIT" 
-						
-			}			
-		}	        
-
-       stage('Deploy - EB AWS') { 
-			
+		stage('Build Imagem Docker DISCOUNT API ') { 
 			when {
               expression {
                 currentBuild.result == null || currentBuild.result == 'SUCCESS' 
@@ -73,9 +41,27 @@ pipeline {
             }
 			steps {			
 				echo "####################################"
+				echo "Building Docker Image"	
+				echo "####################################"
+                sh "docker build -t renatoadsumus/api-discount:staging ."				
+				echo "####################################"              
+						
+			}			
+		}	        
+
+       stage('Deploy') { 
+			
+			when {
+              expression {
+                currentBuild.result == null || currentBuild.result == 'SUCCESS' 
+              }
+            }
+			steps {		
+				sh "docker stop $(docker ps -q)"	
+				echo "####################################"
 				echo "Gerando a Imagem Docker da Aplicacao"	
 				echo "####################################"               	
-				 sh "docker run --rm -v /opt/jenkins/workspace/deploy_app/eb/:/opt/artefato_deploy -e AWS_ACCESS_KEY_ID='${AWS_ACCESS_KEY_ID}' -e AWS_SECRET_ACCESS_KEY='${AWS_SECRET_ACCESS_KEY}' -e VERSAO='${env.BUILD_ID}' -e OPCAO='${params.TipoDeploy}' -e APP_NAME='jexia-purchase-${params.Environment}' renatoadsumus/aws_cli:3.0"
+				 sh "docker run --rm -p 8080:5000 renatoadsumus/api-discount:staging"
 						
 			}						
 		}  	
