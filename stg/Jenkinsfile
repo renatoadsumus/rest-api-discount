@@ -41,7 +41,7 @@ pipeline {
               }
             }
 			steps {		
-				sh "docker stop api_staging"
+				//sh "docker stop api_staging"
 				echo "####################################"
 				echo "Gerando a Imagem Docker da Aplicacao"	
 				echo "####################################"               	
