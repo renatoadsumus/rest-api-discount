@@ -14,7 +14,7 @@ pipeline {
 				echo "####################################"
 				echo "Recovering Last Version Stable"	
 				echo "####################################"
-                sh "docker build tag renatoadsumus/api-discount:fallback renatoadsumus/api-discount:latest"				
+                sh "docker tag renatoadsumus/api-discount:fallback renatoadsumus/api-discount:latest"				
 				echo "####################################"              
 						
 			}			

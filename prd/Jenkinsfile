@@ -29,7 +29,7 @@ pipeline {
 				echo "####################################"
 				echo "Building Docker Image"	
 				echo "####################################"
-				sh "docker build tag renatoadsumus/api-discount:latest renatoadsumus/api-discount:fallback"	
+				sh "docker tag renatoadsumus/api-discount:latest renatoadsumus/api-discount:fallback"	
                 sh "docker build -t renatoadsumus/api-discount:latest ."							
 				echo "####################################"              
 						
