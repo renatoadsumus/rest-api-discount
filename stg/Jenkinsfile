@@ -6,11 +6,7 @@ pipeline {
 
 		stage('Build and Unit Test') { 
 			steps {	
-				slackSend (color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-
-               	hipchatSend (color: 'YELLOW', notify: true,
-            	message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
-          )			
+				
 				echo "####################################"
 				echo "Running Unit Test"
 				echo "####################################"
@@ -61,35 +57,10 @@ pipeline {
 				echo "####################################"
 				echo "Gerando a Imagem Docker da Aplicacao"	
 				echo "####################################"               	
-				 sh "docker run --rm -p 8080:5000 renatoadsumus/api-discount:staging"
+				 sh "docker run -d -p 8082:5000 renatoadsumus/api-discount:staging"
 						
 			}						
 		}  	
-	}
-
-	post {
-		
-		always {
-			cleanWs()
-		}
-
-		success {
-      		slackSend (color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-
-      		hipchatSend (color: 'GREEN', notify: true,
-          	message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
-        )
-
-  
-    	}
-	
-		failure {
-      		slackSend (color: '#FF0000', message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-
-      		hipchatSend (color: 'RED', notify: true,
-          	message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
-        	)     
-    	}
-	} 	
+	}	
 
 }

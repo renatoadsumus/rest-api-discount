@@ -34,7 +34,7 @@ pipeline {
 				echo "####################################"
 				echo "Gerando a Imagem Docker da Aplicacao"	
 				echo "####################################"               	
-				 sh "docker run --rm -p 80:5000 renatoadsumus/api-discount:latest"
+				 sh "docker run -d -p 8080:5000 renatoadsumus/api-discount:latest"
 						
 			}						
 		}  	
