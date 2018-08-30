@@ -10,7 +10,7 @@ pipeline {
 				echo "####################################"
 				echo "Running Unit Test"
 				echo "####################################"
-                sh "python -m unittest discover test/unit/"
+                sh "python -m unittest discover test"
 				echo "####################################"  
 				
                			  							
