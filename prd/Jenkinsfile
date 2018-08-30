@@ -44,7 +44,7 @@ pipeline {
               }
             }
 			steps {			
-                sh "docker stop api_production"
+                //sh "docker stop api_production"
 				echo "####################################"
 				echo "Running Container API"	
 				echo "####################################"               	
