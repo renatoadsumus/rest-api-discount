@@ -53,11 +53,11 @@ pipeline {
               }
             }
 			steps {		
-				sh "docker stop $(docker ps -q)"	
+				//sh "docker stop --name api_staging"	
 				echo "####################################"
 				echo "Gerando a Imagem Docker da Aplicacao"	
 				echo "####################################"               	
-				 sh "docker run -d -p 8082:5000 renatoadsumus/api-discount:staging"
+				 sh "docker run -d --rm -p 8082:5000 --name api_staging renatoadsumus/api-discount:staging"
 						
 			}						
 		}  	
