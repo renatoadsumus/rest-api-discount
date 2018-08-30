@@ -4,32 +4,20 @@ pipeline {
     stages 
 	{ 	
 
-		stage('Build and Unit Test') { 
+		stage('Build and Unit - Integration Test') {
 			steps {	
 				
 				echo "####################################"
 				echo "Running Unit Test"
 				echo "####################################"
-                sh "python -m unittest discover test/unit/"
+                sh "python -m unittest discover test"
 				echo "####################################"
                			  							
 			}			
 		}
-
-		stage('Integration Test') { 
-			steps {
-
-				echo "####################################"
-				echo "Running Integration Test"
-				echo "####################################"
-				sh "python -m unittest discover test/integration/"
-				echo "####################################"  	
-			}
-
-		}
 		
 		
-		stage('Build Imagem Docker DISCOUNT API ') { 
+		stage('Build Image Docker DISCOUNT API ') {
 			when {
               expression {
                 currentBuild.result == null || currentBuild.result == 'SUCCESS' 
@@ -53,7 +41,7 @@ pipeline {
               }
             }
 			steps {		
-				//sh "docker stop --name api_staging"	
+				sh "docker stop api_staging"
 				echo "####################################"
 				echo "Gerando a Imagem Docker da Aplicacao"	
 				echo "####################################"               	
