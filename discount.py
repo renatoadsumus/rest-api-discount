@@ -11,4 +11,10 @@ class Discount(object):
         if parse_purchase_total > 20:
             discount = 20
 
+        if parse_purchase_total > 25:
+            discount = 22
+
+        if parse_purchase_total > 30:
+            discount = 25
+
         return discount

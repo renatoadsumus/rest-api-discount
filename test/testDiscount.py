@@ -21,5 +21,18 @@ class DiscountTest(unittest.TestCase):
 
         self.assertEqual(20, result_actual)
 
+    def test_purchase_total_is_26_and_discount_is_22(self):
+        discount = Discount()
+        result_actual = discount.get_discount(26)
+
+        self.assertEqual(22, result_actual)
+
+    def test_purchase_total_is_36_and_discount_is_25(self):
+        discount = Discount()
+        result_actual = discount.get_discount(36)
+
+        self.assertEqual(25, result_actual)
+
+
 if __name__ == '__main__':
     unittest.main()
